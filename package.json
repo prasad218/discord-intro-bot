@@ -1,0 +1,27 @@
+{
+  "name": "discord-intro-bot",
+  "version": "1.0.0",
+  "description": "Discord Introduction Bot powered by ResilientLLM",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "resilient-llm",
+    "openrouter"
+  ],
+  "author": "Shankar",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
+    "resilient-llm": "^1.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+} 

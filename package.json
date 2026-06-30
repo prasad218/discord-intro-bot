@@ -6,13 +6,17 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "node src/testLLM.js"
   },
   "keywords": [
     "discord",
-    "bot",
+    "discord-bot",
     "resilient-llm",
-    "openrouter"
+    "openrouter",
+    "nodejs",
+    "ai",
+    "llm"
   ],
   "author": "Shankar",
   "license": "ISC",

@@ -6,12 +6,19 @@ const INTRODUCTION_KEYWORDS = [
     "student",
     "developer",
     "engineer",
+    "designer",
+    "programmer",
+    "software",
     "interested",
     "working",
     "study",
     "studying",
     "love",
-    "passionate"
+    "passionate",
+    "learning",
+    "currently",
+    "hello everyone",
+    "hi everyone"
 ];
 
 const MIN_LENGTH = 25;
@@ -20,7 +27,7 @@ export function validateIntroduction(content) {
 
     const message = content.toLowerCase().trim();
 
-    // Check minimum length
+    // Minimum length
     if (message.length < MIN_LENGTH) {
         return {
             valid: false,
@@ -28,7 +35,7 @@ export function validateIntroduction(content) {
         };
     }
 
-    // Check if at least one introduction keyword exists
+    // Check if it looks like an introduction
     const hasKeyword = INTRODUCTION_KEYWORDS.some(keyword =>
         message.includes(keyword)
     );

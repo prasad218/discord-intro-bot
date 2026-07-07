@@ -6,13 +6,25 @@ import { isDuplicateIntroduction, saveIntroduction } from "../middleware/duplica
 
 export async function handleIntroduction(message) {
     try {
+
+        console.log("========== HANDLE INTRODUCTION ==========");
+
         // Ignore bot messages
-        if (message.author.bot) return;
+        if (message.author.bot) {
+            console.log("❌ Ignored Bot");
+            return;
+        }
+
+        console.log("✅ Step 1");
 
         // Ignore replies
-        if (message.reference) return;
+        if (message.reference) {
+            console.log("❌ Ignored Reply");
+            return;
+        }
 
-        // Ignore simple greetings
+        console.log("✅ Step 2");
+
         const ignoredMessages = [
             "hi",
             "hello",
@@ -34,75 +46,89 @@ export async function handleIntroduction(message) {
                 message.content.toLowerCase().trim()
             )
         ) {
+            console.log("❌ Greeting ignored");
             return;
         }
 
-        // Only respond in introductions channel
-        if (message.channel.id !== config.introChannelId) return;
+        console.log("✅ Step 3");
 
-        // Already welcomed
+        if (message.channel.id !== config.introChannelId) {
+            console.log("❌ Wrong Channel");
+            console.log("Expected:", config.introChannelId);
+            console.log("Received:", message.channel.id);
+            return;
+        }
+
+        console.log("✅ Step 4");
+
         if (hasBeenWelcomed(message.author.id)) {
-            await message.reply(
-                "👋 You've already introduced yourself. Welcome again!"
-            );
+            console.log("Already Welcomed");
+            await message.reply("👋 You've already introduced yourself.");
             return;
         }
 
-        // AI Moderation
+        console.log("✅ Step 5");
+
+        console.log("Running Moderation...");
+
         const moderation = await moderateIntroduction(message.content);
 
+        console.log("Moderation Result:", moderation);
+
         if (moderation === "REJECT") {
-            await message.reply(
-                "❌ Your introduction contains inappropriate, promotional, or offensive content.\n\n" +
-                "Please keep introductions respectful and genuine."
-            );
+            await message.reply("❌ Rejected by AI moderation.");
             return;
         }
 
-        // Validate introduction
+        console.log("✅ Step 6");
+
         const validation = validateIntroduction(message.content);
 
+        console.log("Validation:", validation);
+
         if (!validation.valid) {
-            await message.reply(
-                `❌ ${validation.reason}\n\n` +
-                "Please introduce yourself by including:\n" +
-                "• Your name\n" +
-                "• Where you're from\n" +
-                "• Your interests"
-            );
+            await message.reply(validation.reason);
             return;
         }
 
-        // Duplicate detection
+        console.log("✅ Step 7");
+
         if (isDuplicateIntroduction(message.content)) {
-            await message.reply(
-                "⚠️ This introduction appears very similar to an existing introduction.\n\n" +
-                "Please write your own unique introduction."
-            );
+            console.log("Duplicate");
+            await message.reply("Duplicate Introduction");
             return;
         }
 
-        console.log(`📨 Introduction from ${message.author.username}`);
+        console.log("✅ Step 8");
 
         await message.channel.sendTyping();
 
-        // Generate AI welcome
+        console.log("Calling LLM...");
+
         const reply = await generateIntroductionReply(message.content);
+
+        console.log("LLM Reply:");
+        console.log(reply);
+
+        console.log("✅ Step 9");
 
         await message.reply(reply);
 
-        // Save introduction
+        console.log("✅ Reply Sent");
+
         saveIntroduction(message.content);
 
-        // Remember user
         markAsWelcomed(message.author.id);
 
-        console.log(`✅ Welcome message sent to ${message.author.username}`);
+        console.log("Finished Successfully");
+
     } catch (error) {
-        console.error("❌ Error:", error);
+
+        console.error("========== ERROR ==========");
+        console.error(error);
 
         await message.reply(
-            "⚠️ Sorry! I couldn't process your introduction right now. Please try again later."
+            "⚠️ Sorry! Something went wrong."
         );
     }
-}  
+} 

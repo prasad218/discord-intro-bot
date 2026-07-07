@@ -59,13 +59,21 @@ export async function handleIntroduction(message) {
             return;
         }
 
-        console.log("✅ Step 4");
+       console.log("Expected:", JSON.stringify(config.introChannelId));
+console.log("Received:", JSON.stringify(message.channel.id));
 
-        if (hasBeenWelcomed(message.author.id)) {
-            console.log("Already Welcomed");
-            await message.reply("👋 You've already introduced yourself.");
-            return;
-        }
+console.log("Expected Type:", typeof config.introChannelId);
+console.log("Received Type:", typeof message.channel.id);
+
+if (
+    String(message.channel.id).trim() !==
+    String(config.introChannelId).trim()
+) {
+    console.log("❌ Wrong Channel");
+    return;
+}
+
+console.log("✅ Step 4"); 
 
         console.log("✅ Step 5");
 

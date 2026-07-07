@@ -1,26 +1,11 @@
 import config from "../config.js";
-
-import {
-    generateIntroductionReply,
-    moderateIntroduction
-} from "../services/llmService.js";
-
+import { generateIntroductionReply, moderateIntroduction } from "../services/llmService.js";
 import { validateIntroduction } from "../middleware/introductionValidator.js";
-
-import {
-    hasBeenWelcomed,
-    markAsWelcomed
-} from "../middleware/welcomeTracker.js";
-
-import {
-    isDuplicateIntroduction,
-    saveIntroduction
-} from "../middleware/duplicateDetector.js";
+import { hasBeenWelcomed, markAsWelcomed } from "../middleware/welcomeTracker.js";
+import { isDuplicateIntroduction, saveIntroduction } from "../middleware/duplicateDetector.js";
 
 export async function handleIntroduction(message) {
-
     try {
-
         // Ignore bot messages
         if (message.author.bot) return;
 
@@ -57,34 +42,27 @@ export async function handleIntroduction(message) {
 
         // Already welcomed
         if (hasBeenWelcomed(message.author.id)) {
-
             await message.reply(
                 "👋 You've already introduced yourself. Welcome again!"
             );
-
             return;
-
         }
 
         // AI Moderation
         const moderation = await moderateIntroduction(message.content);
 
         if (moderation === "REJECT") {
-
             await message.reply(
                 "❌ Your introduction contains inappropriate, promotional, or offensive content.\n\n" +
                 "Please keep introductions respectful and genuine."
             );
-
             return;
-
         }
 
         // Validate introduction
         const validation = validateIntroduction(message.content);
 
         if (!validation.valid) {
-
             await message.reply(
                 `❌ ${validation.reason}\n\n` +
                 "Please introduce yourself by including:\n" +
@@ -92,21 +70,16 @@ export async function handleIntroduction(message) {
                 "• Where you're from\n" +
                 "• Your interests"
             );
-
             return;
-
         }
 
         // Duplicate detection
         if (isDuplicateIntroduction(message.content)) {
-
             await message.reply(
                 "⚠️ This introduction appears very similar to an existing introduction.\n\n" +
                 "Please write your own unique introduction."
             );
-
             return;
-
         }
 
         console.log(`📨 Introduction from ${message.author.username}`);
@@ -125,16 +98,11 @@ export async function handleIntroduction(message) {
         markAsWelcomed(message.author.id);
 
         console.log(`✅ Welcome message sent to ${message.author.username}`);
-
-    }
-    catch (error) {
-
+    } catch (error) {
         console.error("❌ Error:", error);
 
         await message.reply(
             "⚠️ Sorry! I couldn't process your introduction right now. Please try again later."
         );
-
     }
-
-} 
+}  

@@ -10,20 +10,10 @@ export async function handleIntroduction(message) {
         console.log("========== HANDLE INTRODUCTION ==========");
 
         // Ignore bot messages
-        if (message.author.bot) {
-            console.log("❌ Ignored Bot");
-            return;
-        }
-
-        console.log("✅ Step 1");
+        if (message.author.bot) return;
 
         // Ignore replies
-        if (message.reference) {
-            console.log("❌ Ignored Reply");
-            return;
-        }
-
-        console.log("✅ Step 2");
+        if (message.reference) return;
 
         const ignoredMessages = [
             "hi",
@@ -41,98 +31,88 @@ export async function handleIntroduction(message) {
             "good evening"
         ];
 
-        if (
-            ignoredMessages.includes(
-                message.content.toLowerCase().trim()
-            )
-        ) {
-            console.log("❌ Greeting ignored");
+        if (ignoredMessages.includes(message.content.toLowerCase().trim())) {
+            console.log("Greeting ignored");
             return;
         }
 
-        console.log("✅ Step 3");
+        // Channel Check
+        const expected = String(config.introChannelId).trim();
+        const received = String(message.channel.id).trim();
 
-        if (message.channel.id !== config.introChannelId) {
-            console.log("❌ Wrong Channel");
-            console.log("Expected:", config.introChannelId);
-            console.log("Received:", message.channel.id);
+        console.log("Expected:", JSON.stringify(expected));
+        console.log("Received:", JSON.stringify(received));
+        console.log("Equal:", expected === received);
+
+        if (expected !== received) {
+            console.log("Wrong Channel");
             return;
         }
 
-       console.log("Expected:", JSON.stringify(config.introChannelId));
-console.log("Received:", JSON.stringify(message.channel.id));
+        console.log("Correct Channel");
 
-console.log("Expected Type:", typeof config.introChannelId);
-console.log("Received Type:", typeof message.channel.id);
-
-if (
-    String(message.channel.id).trim() !==
-    String(config.introChannelId).trim()
-) {
-    console.log("❌ Wrong Channel");
-    return;
-}
-
-console.log("✅ Step 4"); 
-
-        console.log("✅ Step 5");
+        // Already welcomed
+        if (hasBeenWelcomed(message.author.id)) {
+            await message.reply(
+                "👋 You've already introduced yourself. Welcome again!"
+            );
+            return;
+        }
 
         console.log("Running Moderation...");
 
         const moderation = await moderateIntroduction(message.content);
 
-        console.log("Moderation Result:", moderation);
+        console.log("Moderation:", moderation);
 
         if (moderation === "REJECT") {
-            await message.reply("❌ Rejected by AI moderation.");
+            await message.reply(
+                "❌ Your introduction contains inappropriate or promotional content."
+            );
             return;
         }
-
-        console.log("✅ Step 6");
 
         const validation = validateIntroduction(message.content);
 
-        console.log("Validation:", validation);
+        console.log(validation);
 
         if (!validation.valid) {
-            await message.reply(validation.reason);
+            await message.reply(
+                `❌ ${validation.reason}
+
+Please include:
+• Your name
+• Where you're from
+• Your interests`
+            );
             return;
         }
-
-        console.log("✅ Step 7");
 
         if (isDuplicateIntroduction(message.content)) {
-            console.log("Duplicate");
-            await message.reply("Duplicate Introduction");
+            await message.reply(
+                "⚠️ This introduction looks very similar to another introduction."
+            );
             return;
         }
 
-        console.log("✅ Step 8");
+        console.log("Generating AI reply...");
 
         await message.channel.sendTyping();
 
-        console.log("Calling LLM...");
-
         const reply = await generateIntroductionReply(message.content);
 
-        console.log("LLM Reply:");
         console.log(reply);
 
-        console.log("✅ Step 9");
-
         await message.reply(reply);
-
-        console.log("✅ Reply Sent");
 
         saveIntroduction(message.content);
 
         markAsWelcomed(message.author.id);
 
-        console.log("Finished Successfully");
+        console.log("Done");
 
     } catch (error) {
 
-        console.error("========== ERROR ==========");
         console.error(error);
 
         await message.reply(

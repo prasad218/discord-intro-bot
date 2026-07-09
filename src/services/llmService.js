@@ -1,6 +1,7 @@
 import { ResilientLLM } from "resilient-llm";
 
-import config from "../config.js";
+import config from "../config.js"; 
+import { spamSystemPrompt } from "../prompts/spamPrompt.js"; 
 
 import {
     DEFAULT_MODEL,
@@ -125,3 +126,44 @@ Do not add any extra words.
         return "APPROVE";
     }
 } 
+// ==========================================
+// AI Spam Detection
+// ==========================================
+
+export async function detectSpam(userMessage) {
+
+    const conversation = [
+        {
+            role: "system",
+            content: spamSystemPrompt
+        },
+        {
+            role: "user",
+            content: userMessage
+        }
+    ];
+
+    try {
+
+        const response = await llm.chat(conversation);
+
+        const result = response.content
+            .trim()
+            .toUpperCase();
+
+        console.log("🚨 Spam Detection:", result);
+
+        if (result.includes("SPAM")) {
+            return "SPAM";
+        }
+
+        return "SAFE";
+
+    } catch (error) {
+
+        console.error("Spam Detection Error:", error);
+
+        // Fail open so normal conversations are not blocked
+        return "SAFE";
+    }
+}

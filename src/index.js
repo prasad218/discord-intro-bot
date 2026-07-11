@@ -3,9 +3,20 @@ import config from "./config.js";
 
 import { handleIntroduction } from "./handlers/introductionHandler.js";
 import { handleSpam } from "./handlers/spamHandler.js";
+import { removeNewMemberRole } from "./jobs/removeNewMemberRole.js";
 
-client.once("clientReady", () => {
+client.once("clientReady", async () => {
+
     console.log(`🤖 Logged in as ${client.user.tag}`);
+
+    // Run once when the bot starts
+    await removeNewMemberRole(client);
+
+    // Run at the configured interval
+    setInterval(async () => {
+        await removeNewMemberRole(client);
+    }, config.roleCleanupIntervalHours * 60 * 60 * 1000);
+
 });
 
 client.on("messageCreate", async (message) => {
@@ -22,9 +33,9 @@ client.on("messageCreate", async (message) => {
         return;
     }
 
-    // Existing Introduction Bot
+    // Introduction Handler
     await handleIntroduction(message);
 
 });
 
-client.login(config.discordToken); 
+client.login(config.discordToken);      
